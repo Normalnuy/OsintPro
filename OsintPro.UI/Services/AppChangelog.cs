@@ -4,6 +4,17 @@
     {
         public static string GetForVersion(string version) => version switch
         {
+            "1.0.5" =>
+                "✨ Justin OSINT v1.0.5\n\n" +
+                "🐛 Архів\n" +
+                "• Надійне збереження — кожен пошук = окреме досьє.\n" +
+                "• ↻ Оновити коректно оновлює запис з архіву.\n\n" +
+                "🎨 Інтерфейс\n" +
+                "• Темні діалоги замість Windows MessageBox.\n\n" +
+                "📋 З v1.0.1 також: Phone OSINT, Telegram/VK/LinkedIn, PDF, JSON/CSV,\n" +
+                "  порівняння досьє, налаштування кешу, лаунчер з OTA.\n\n" +
+                "Повний список: CHANGELOG.md на GitHub.\n\n" +
+                "Дякуємо, що використовуєте Justin OSINT!",
             "1.0.4" =>
                 "✨ Justin OSINT v1.0.4\n" +
                 "• Виправлено збереження в архів — кожен пошук створює окреме досьє.\n" +

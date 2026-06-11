@@ -9,13 +9,15 @@ namespace OsintPro.UI.Services
 {
     public class ArchiveManager
     {
-        private readonly string _archiveFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "JustinOSINT",
-            "Archives");
+        private readonly string _archiveFolder;
 
-        public ArchiveManager()
+        public ArchiveManager(string archiveFolder = null)
         {
+            _archiveFolder = archiveFolder ?? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "JustinOSINT",
+                "Archives");
+
             if (!Directory.Exists(_archiveFolder))
                 Directory.CreateDirectory(_archiveFolder);
             MigrateLegacyFiles();
@@ -128,9 +130,15 @@ namespace OsintPro.UI.Services
                     if (string.Equals(file, target, StringComparison.OrdinalIgnoreCase)) continue;
 
                     if (!File.Exists(target))
+                    {
                         File.WriteAllText(target, JsonConvert.SerializeObject(dossier, Formatting.Indented));
+                        File.Delete(file);
+                        continue;
+                    }
 
-                    File.Delete(file);
+                    var atTarget = TryLoad(target);
+                    if (atTarget != null && string.Equals(atTarget.Id, dossier.Id, StringComparison.Ordinal))
+                        File.Delete(file);
                 }
                 catch { }
             }

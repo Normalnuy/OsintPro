@@ -1,6 +1,6 @@
 # Pack GitHub Release zip: launcher + main app
 param(
-    [string]$Version = "1.0.3",
+    [string]$Version = "1.0.5",
     [string]$LauncherDir = "$PSScriptRoot\..\..\JustinOSINT_Launcher\JustinOSINT_Launcher\bin\Release\net10.0-windows",
     [string]$AppDir = "",
     [string]$OutDir = "$PSScriptRoot\..\release"

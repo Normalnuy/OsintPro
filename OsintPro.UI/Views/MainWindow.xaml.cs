@@ -33,6 +33,7 @@ namespace OsintPro.UI.Views
         private Dossier _selectedArchiveDossier;
         private Dossier _archiveSourceDossier;
         private Dossier _compareAnchorDossier;
+        private string _searchSessionDossierId;
         private readonly ArchiveManager _archiveManager = new();
         private readonly SearchProgressTracker _searchProgress = new();
         private readonly SearchOrchestrator _orchestrator = new();
@@ -212,6 +213,7 @@ namespace OsintPro.UI.Views
             EditorGrid.Visibility = Visibility.Collapsed;
             _archiveSourceDossier = null;
             _currentDossier = null;
+            _searchSessionDossierId = null;
         }
 
         private void BtnOpenArchive_Click(object sender, RoutedEventArgs e)
@@ -263,7 +265,7 @@ namespace OsintPro.UI.Views
         {
             if (_selectedArchiveDossier == null)
             {
-                MessageBox.Show("Оберіть досьє в архіві (клік по плитці) або видаліть через 🗑 на картці.", "Архів", MessageBoxButton.OK, MessageBoxImage.Information);
+                AppDialogs.Info(this, "Архів", "Оберіть досьє в архіві (клік по плитці) або видаліть через 🗑 на картці.");
                 return;
             }
             DeleteArchiveDossier(_selectedArchiveDossier);
@@ -291,23 +293,21 @@ namespace OsintPro.UI.Views
         {
             if (_selectedArchiveDossier == null)
             {
-                MessageBox.Show("Оберіть досьє в архіві (клік по плитці).", "Порівняння",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                AppDialogs.Info(this, "Порівняння", "Оберіть досьє в архіві (клік по плитці).");
                 return;
             }
 
             if (_compareAnchorDossier == null)
             {
                 _compareAnchorDossier = _selectedArchiveDossier;
-                MessageBox.Show($"Обрано A: «{_compareAnchorDossier.FullName}». Оберіть друге досьє і натисніть Порівняти знову.",
-                    "Порівняння", MessageBoxButton.OK, MessageBoxImage.Information);
+                AppDialogs.Info(this, "Порівняння",
+                    $"Обрано A: «{_compareAnchorDossier.FullName}». Оберіть друге досьє і натисніть Порівняти знову.");
                 return;
             }
 
             if (_compareAnchorDossier.Id == _selectedArchiveDossier.Id)
             {
-                MessageBox.Show("Оберіть інше досьє для порівняння.", "Порівняння",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppDialogs.Warning(this, "Порівняння", "Оберіть інше досьє для порівняння.");
                 return;
             }
 
@@ -320,14 +320,18 @@ namespace OsintPro.UI.Views
         {
             if (dossier?.SearchSnapshot == null)
             {
-                MessageBox.Show("У цьому досьє немає збережених параметрів пошуку. Відкрийте і збережіть після нового пошуку.",
-                    "Архів", MessageBoxButton.OK, MessageBoxImage.Information);
+                AppDialogs.Info(this, "Архів",
+                    "У цьому досьє немає збережених параметрів пошуку. Відкрийте і збережіть після нового пошуку.");
                 return;
             }
 
-            _archiveSourceDossier = dossier;
+            _archiveSourceDossier = _archiveManager.GetById(dossier.Id) ?? dossier;
             ApplySearchSnapshotToForm(dossier.SearchSnapshot);
-            BtnNewSearch_Click(null, null);
+            SearchGrid.Visibility = Visibility.Visible;
+            ArchiveGrid.Visibility = Visibility.Collapsed;
+            EditorGrid.Visibility = Visibility.Collapsed;
+            _currentDossier = null;
+            _searchSessionDossierId = null;
             await PerformSearchAsync();
         }
 
@@ -354,8 +358,7 @@ namespace OsintPro.UI.Views
 
         private void DeleteArchiveDossier(Dossier dossier)
         {
-            if (MessageBox.Show($"Видалити досьє «{dossier.FullName}»?", "Підтвердження",
-                    MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            if (!AppDialogs.Confirm(this, "Підтвердження", $"Видалити досьє «{dossier.FullName}»?"))
                 return;
 
             if (_archiveManager.DeleteDossier(dossier.Id))
@@ -371,7 +374,7 @@ namespace OsintPro.UI.Views
         private void OpenDossierEditor(Dossier selected)
         {
             _selectedArchiveDossier = selected;
-            _currentDossier = selected;
+            _currentDossier = _archiveManager.GetById(selected.Id) ?? selected;
             EditorTitle.Text = $"ДОСЬЄ: {selected.FullName}";
             EditorNotes.Text = selected.CustomNotes;
             EditorSecurity.ItemsSource = _currentDossier.Security;
@@ -414,7 +417,7 @@ namespace OsintPro.UI.Views
             {
                 _currentDossier.CustomNotes = EditorNotes.Text;
                 _archiveManager.SaveDossier(_currentDossier);
-                MessageBox.Show("Зміни збережено!", "Архів", MessageBoxButton.OK, MessageBoxImage.Information);
+                AppDialogs.Success(this, "Архів", "Зміни збережено!");
             }
         }
 
@@ -428,12 +431,12 @@ namespace OsintPro.UI.Views
                 try
                 {
                     PdfGenerator.ExportToPdf(_currentDossier, sfd.FileName);
-                    MessageBox.Show("PDF звіт створено!");
+                    AppDialogs.Success(this, "PDF", "PDF звіт створено!");
                 }
                 catch (Exception ex)
                 {
                     SentrySdk.CaptureException(ex);
-                    MessageBox.Show($"Помилка: {ex.Message}");
+                    AppDialogs.Error(this, "PDF", $"Помилка: {ex.Message}");
                 }
             }
         }
@@ -452,7 +455,7 @@ namespace OsintPro.UI.Views
             _archiveManager.SaveDossier(_currentDossier);
             _archiveSourceDossier = null;
             BtnSaveSearchToArchive.Visibility = Visibility.Collapsed;
-            MessageBox.Show("Досьє збережено в архів!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+            AppDialogs.Success(this, "Архів", "Досьє збережено в архів!");
         }
 
         private void BtnExportJson_Click(object sender, RoutedEventArgs e) => ExportCurrentDossier("JSON Document|*.json", ExportService.ExportDossierJson);
@@ -471,12 +474,12 @@ namespace OsintPro.UI.Views
                 try
                 {
                     exporter(_currentDossier, sfd.FileName);
-                    MessageBox.Show("Експорт завершено!");
+                    AppDialogs.Success(this, "Експорт", "Експорт завершено!");
                 }
                 catch (Exception ex)
                 {
                     SentrySdk.CaptureException(ex);
-                    MessageBox.Show($"Помилка експорту: {ex.Message}");
+                    AppDialogs.Error(this, "Експорт", $"Помилка експорту: {ex.Message}");
                 }
             }
         }
@@ -551,7 +554,7 @@ namespace OsintPro.UI.Views
             catch (Exception ex)
             {
                 SentrySdk.CaptureException(ex);
-                MessageBox.Show($"Помилка WebView2: {ex.Message}");
+                AppDialogs.Error(this, "WebView2", $"Помилка WebView2: {ex.Message}");
             }
         }
 
@@ -640,7 +643,10 @@ namespace OsintPro.UI.Views
             }
 
             if (_archiveSourceDossier == null)
+            {
                 _currentDossier = null;
+                _searchSessionDossierId = null;
+            }
 
             SentrySdk.CaptureMessage("Search Executed", scope =>
             {
@@ -738,7 +744,7 @@ namespace OsintPro.UI.Views
             catch (Exception ex)
             {
                 SentrySdk.CaptureException(ex);
-                MessageBox.Show($"Помилка оновлення модуля: {ex.Message}");
+                AppDialogs.Error(this, "Модуль", $"Помилка оновлення модуля: {ex.Message}");
             }
         }
 
@@ -851,7 +857,6 @@ namespace OsintPro.UI.Views
 
         private void UpdateDossierFromCurrentResults()
         {
-            Dossier existing = _archiveSourceDossier ?? _currentDossier;
             _currentDossier = DossierBuilder.FromSearchResults(
                 _lastSearchContext,
                 CasesList.ItemsSource as IEnumerable<CourtCaseDisplay>,
@@ -861,7 +866,23 @@ namespace OsintPro.UI.Views
                 DeclarationsList.ItemsSource as IEnumerable<GenericRecordDisplay>,
                 FootprintList.ItemsSource as IEnumerable<GenericRecordDisplay>,
                 SocialList.ItemsSource as IEnumerable<GenericRecordDisplay>,
-                existing);
+                ResolveExistingDossierForUpdate());
+
+            if (_archiveSourceDossier == null)
+                _searchSessionDossierId = _currentDossier.Id;
+        }
+
+        private Dossier ResolveExistingDossierForUpdate()
+        {
+            if (_archiveSourceDossier != null)
+                return _archiveSourceDossier;
+
+            if (_searchSessionDossierId != null &&
+                _currentDossier != null &&
+                string.Equals(_currentDossier.Id, _searchSessionDossierId, StringComparison.Ordinal))
+                return _currentDossier;
+
+            return null;
         }
 
         private void ShowLoadingSkeletons()
@@ -952,7 +973,7 @@ namespace OsintPro.UI.Views
                     catch (Exception ex)
                     {
                         SentrySdk.CaptureException(ex);
-                        MessageBox.Show($"Помилка WebView2:\n{ex.Message}");
+                        AppDialogs.Error(this, "WebView2", $"Помилка WebView2:\n{ex.Message}");
                     }
                     return;
                 }

@@ -26,7 +26,7 @@ namespace OsintPro.UI.Services
             try
             {
                 using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
-                client.DefaultRequestHeaders.Add("User-Agent", "JustinOSINT-App/1.0.4");
+                client.DefaultRequestHeaders.Add("User-Agent", "JustinOSINT-App/1.0.5");
                 string json = await client.GetStringAsync(GitHubApiUrl);
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;

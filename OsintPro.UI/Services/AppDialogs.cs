@@ -14,6 +14,9 @@ namespace OsintPro.UI.Services
         public static void Warning(Window owner, string title, string message) =>
             Show(owner, title, message, "⚠️", "OK");
 
+        public static void Error(Window owner, string title, string message) =>
+            Show(owner, title, message, "❌", "OK");
+
         public static bool Confirm(Window owner, string title, string message) =>
             Show(owner, title, message, "❓", "Так", "Ні") == true;
 
