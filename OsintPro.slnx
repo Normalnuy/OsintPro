@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="OsintPro.UI.Tests/OsintPro.UI.Tests.csproj" />
+  <Project Path="OsintPro.UI/OsintPro.UI.csproj" />
+</Solution>

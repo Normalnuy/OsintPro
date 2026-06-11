@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, release/**]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore app
+        run: dotnet restore OsintPro.UI/OsintPro.UI.csproj
+
+      - name: Restore launcher
+        run: dotnet restore ../JustinOSINT_Launcher/JustinOSINT_Launcher/JustinOSINT_Launcher.csproj
+        working-directory: ${{ github.workspace }}
+        continue-on-error: true
+
+      - name: Build Release
+        run: dotnet build OsintPro.UI/OsintPro.UI.csproj -c Release --no-restore
+
+      - name: Test
+        run: dotnet test OsintPro.UI.Tests/OsintPro.UI.Tests.csproj -c Release
+
+      - name: Publish app
+        run: dotnet publish OsintPro.UI/OsintPro.UI.csproj -c Release -r win-x64 --self-contained false -o ./artifacts/JustinOSINT
+
+      - name: Build launcher
+        run: dotnet build ../JustinOSINT_Launcher/JustinOSINT_Launcher/JustinOSINT_Launcher.csproj -c Release
+        continue-on-error: true
+
+      - name: Pack release zip
+        shell: pwsh
+        run: |
+          $launcher = Resolve-Path "../JustinOSINT_Launcher/JustinOSINT_Launcher/bin/Release/net10.0-windows/JustinOSINT_Launcher.exe" -ErrorAction SilentlyContinue
+          if ($launcher) {
+            Copy-Item $launcher ./artifacts/JustinOSINT/ -Force
+            Copy-Item (Split-Path $launcher)/JustinOSINT_Launcher.dll ./artifacts/JustinOSINT/ -Force -ErrorAction SilentlyContinue
+            Copy-Item (Split-Path $launcher)/JustinOSINT_Launcher.runtimeconfig.json ./artifacts/JustinOSINT/ -Force -ErrorAction SilentlyContinue
+          }
+          Compress-Archive -Path ./artifacts/JustinOSINT/* -DestinationPath ./artifacts/JustinOSINT-v1.0.4-win-x64.zip -Force
+        continue-on-error: true
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: JustinOSINT-win-x64
+          path: ./artifacts/

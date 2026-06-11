@@ -1,0 +1,52 @@
+﻿<Window x:Class="OsintPro.UI.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Налаштування" Height="560" Width="560"
+        WindowStartupLocation="CenterOwner" Background="#121212" Foreground="White"
+        WindowStyle="None" ResizeMode="NoResize">
+
+    <Border Background="#121212" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="16" Margin="8">
+        <Grid Margin="28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Text="⚙️ Налаштування" FontSize="22" FontWeight="Bold" Foreground="#00C6FF"/>
+                <TextBlock Text="Конфігурація зберігається локально" FontSize="12" Foreground="#666" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <Border Background="#1A1A1A" CornerRadius="12" Padding="16" Margin="0,0,0,12" BorderBrush="#252526" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="Кеш пошуку" FontWeight="SemiBold" Foreground="#00C6FF" Margin="0,0,0,10"/>
+                            <CheckBox x:Name="EnableCacheCheck" Content="Кешувати результати пошуку" Foreground="#AAAAAA" FontSize="13"/>
+                            <TextBlock Text="Час життя кешу (години, 1–168)" FontSize="11" Foreground="#666" Margin="0,12,0,6"/>
+                            <TextBox x:Name="CacheTtlBox" Height="36" Background="#1E1E1E" Foreground="White" BorderBrush="#333" BorderThickness="1" Padding="10,0" FontSize="12" VerticalContentAlignment="Center" CaretBrush="#0072FF"/>
+                            <TextBlock x:Name="CacheStatsText" FontSize="11" Foreground="#888" Margin="0,8,0,8"/>
+                            <Button x:Name="ClearCacheButton" Content="🗑 Очистити кеш" Click="ClearCache_Click" Height="34" HorizontalAlignment="Left" Padding="12,0" Background="#2A2A2A" Foreground="#FF8888" BorderBrush="#444" BorderThickness="1" Cursor="Hand" FocusVisualStyle="{x:Null}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#1A1A1A" CornerRadius="12" Padding="16" BorderBrush="#252526" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="Sentry (діагностика збоїв)" FontWeight="SemiBold" Foreground="#00C6FF" Margin="0,0,0,10"/>
+                            <TextBlock Text="DSN (порожньо = вимкнено)" FontSize="11" Foreground="#666" Margin="0,0,0,6"/>
+                            <TextBox x:Name="SentryDsnBox" Height="36" Background="#1E1E1E" Foreground="White" BorderBrush="#333" BorderThickness="1" Padding="10,0" FontSize="12" VerticalContentAlignment="Center" CaretBrush="#0072FF"/>
+                            <TextBlock Text="Traces sample rate (0.0 – 1.0)" FontSize="11" Foreground="#666" Margin="0,12,0,6"/>
+                            <TextBox x:Name="SentryRateBox" Height="36" Background="#1E1E1E" Foreground="White" BorderBrush="#333" BorderThickness="1" Padding="10,0" FontSize="12" VerticalContentAlignment="Center" CaretBrush="#0072FF"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="Скасувати" Click="Cancel_Click" Width="110" Height="40" Margin="0,0,10,0" Background="#2A2A2A" Foreground="#AAA" BorderBrush="#333" BorderThickness="1" Cursor="Hand" FocusVisualStyle="{x:Null}"/>
+                <Button Content="💾 Зберегти" Click="Save_Click" Width="130" Height="40" Background="#0072FF" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" FocusVisualStyle="{x:Null}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
